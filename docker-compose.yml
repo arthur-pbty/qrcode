@@ -1,39 +1,11 @@
 services:
-  qrcode:
-    image: node:22-alpine
-    container_name: qrcode-generator
-    working_dir: /app
+  web:
+    build: .
     ports:
-      - "3001:3000"
-    environment:
-      - NODE_ENV=production
-      - HOSTNAME=0.0.0.0
-      - PORT=3000
+      - "3000:3000"
     volumes:
-      - .:/app
-      - node_modules:/app/node_modules
-      - nextjs_cache:/app/.next/cache
-    command: >
-      sh -c "
-        if [ ! -d .next/standalone ]; then
-          echo '📦 Installing dependencies...' &&
-          npm ci &&
-          echo '🔨 Building application...' &&
-          NODE_OPTIONS='--max-old-space-size=1536' npm run build;
-        fi &&
-        echo '🚀 Starting QR Code Generator...' &&
-        cp -r .next/static .next/standalone/.next/static 2>/dev/null || true &&
-        cp -r public .next/standalone/public 2>/dev/null || true &&
-        node .next/standalone/server.js
-      "
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://localhost:3000 || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 120s
-
-volumes:
-  node_modules:
-  nextjs_cache:
+      - ./:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+    command: npm run dev
